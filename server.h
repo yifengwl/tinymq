@@ -3,7 +3,7 @@
 
 #include <string>
 #include <map>
-#include "tinyIOEvent.h"
+//#include "tinySocket.h"
 namespace tinymq {
 
 	class mqServer
@@ -24,7 +24,7 @@ namespace tinymq {
 		void onDisconnect();
 		
 	private:
-		std::map<std::string, clientIOEvent*> clientMap;
+		std::map<std::string, clientIOEvent*> _clientMap;
 	};
 
 }

@@ -1,15 +1,4 @@
-#include <stdio.h>  
-#include <unistd.h>
-#include <string.h>  
-#include <iostream>  
-#include <sys/socket.h>    
-#include <sys/epoll.h>    
-#include <netinet/in.h>      
-#include <arpa/inet.h>      
-#include <netdb.h>  
-#include "tinyIOEvent.h"
-//#include <event.h>  
-#include "epollEvent.h"
+#include "tinymq.h"
 using namespace std;  
 using namespace tinymq;
 
@@ -20,7 +9,7 @@ int main()
 	int iSvrFd, epoll_fd; 
 	struct sockaddr_in sSvrAddr;  
 	struct epoll_event ev;
-	std::vector<tinyIOEvent *> events;
+	std::vector<eventProcessor *> events;
 	
 	memset(&sSvrAddr, 0, sizeof(sSvrAddr));    
 	sSvrAddr.sin_family = AF_INET;    
@@ -33,27 +22,23 @@ int main()
 	listen(iSvrFd, 10);  
 	epollEvent  *epollevent = new epollEvent();
 	
-	tinyIOEvent *svrIOev = new serverIOEvent(iSvrFd, sSvrAddr,epollevent);
-	epollevent->addEvent(svrIOev, true, false);
-	//epollevent->getEvents(-1, events, MAX_SOCKET_EVENTS);
-	
+	tinySocket *tSock = new tinySocket(iSvrFd, &sSvrAddr, epollevent);
+	serverEventProcessor * svp = new serverEventProcessor(tSock);
+	tSock->setProcessor(static_cast<eventProcessor *>(svp));
+	epollevent->addEvent(tSock, true, false);
+
 	for (;;)
 	{
 		epollevent->getEvents(-1, events, MAX_SOCKET_EVENTS);
 		for (auto vc : events)
 		{
 			if (vc->_readOccurred)
-			{
-				vc->handleReadEvent();
-			}
-			else if (vc->_writeOccurred) 
-			{	
-				vc->handleWriteEvent();
-			}
-			else 
-			{
+				vc->handleReadEvent();		
+			if (vc->_writeOccurred) 
+				vc->handleWriteEvent();			
+			if (vc->_errorOccurred)
 				std::cout << "ERROR OCCURRED" << std ::endl;
-			}
+			
 		}
 	}
       

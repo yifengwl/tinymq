@@ -1,4 +1,4 @@
-#include "server.h"
+#include "tinymq.h"
 namespace tinymq
 {
 	void mqServer::onConnect()

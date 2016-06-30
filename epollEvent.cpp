@@ -1,5 +1,5 @@
-#include "epollEvent.h"
-#include <string.h>
+#include "tinymq.h"
+
 namespace tinymq {
 	epollEvent::epollEvent()
 	{
@@ -9,11 +9,11 @@ namespace tinymq {
 	{
 		close(_iepfd);
 	}
-	bool epollEvent::addEvent(tinyIOEvent *socket, bool enableRead, bool enableWrite)
+	bool epollEvent::addEvent(tinySocket *socket, bool enableRead, bool enableWrite)
 	{
 		struct epoll_event ev;
 		memset(&ev, 0, sizeof(ev));
-		ev.data.ptr = socket;
+		ev.data.ptr = socket->getProcessor();
 		ev.events = 0;
 		if (enableRead) {
 			ev.events |= EPOLLIN;
@@ -26,12 +26,12 @@ namespace tinymq {
 		return rc;
 	}
 	
-	bool epollEvent::setEvent(tinyIOEvent *socket, bool enableRead, bool enableWrite) 
+	bool epollEvent::setEvent(tinySocket *socket, bool enableRead, bool enableWrite) 
 	{
 
 		struct epoll_event ev;
 		memset(&ev, 0, sizeof(ev));
-		ev.data.ptr = socket;
+		ev.data.ptr = socket->getProcessor();
 		ev.events = 0;
 
 		if (enableRead) {
@@ -46,18 +46,18 @@ namespace tinymq {
 	
 	
 	
-	bool epollEvent::removeEvent(tinyIOEvent *socket) 
+	bool epollEvent::removeEvent(tinySocket *socket) 
 	{
 
 		struct epoll_event ev;
 		memset(&ev, 0, sizeof(ev));
-		ev.data.ptr = socket;
+		ev.data.ptr = socket->getProcessor();
 		ev.events = 0;
 		bool rc = (epoll_ctl(_iepfd, EPOLL_CTL_DEL, socket->getSocketHandle(), &ev) == 0);
 		return rc;
 	}
 	
-	int epollEvent::getEvents(int timeout, std::vector<tinyIOEvent *>& ioevents, int cnt) {
+	int epollEvent::getEvents(int timeout, std::vector<eventProcessor *>& ioevents, int cnt) {
 
 		struct epoll_event events[MAX_SOCKET_EVENTS];
 
@@ -68,9 +68,9 @@ namespace tinymq {
 		int res = epoll_wait(_iepfd, events, cnt, timeout);
 
 		ioevents.clear();
-	  // 把events的事件转化成tinyIOEvent的事件
+	   //把events的事件转化成eventProcessor的事件
 		for (int i = 0; i < res; i++) {
-			ioevents.push_back((tinyIOEvent*)events[i].data.ptr);
+			ioevents.push_back(static_cast<eventProcessor*>(events[i].data.ptr));
 			if (events[i].events & (EPOLLERR | EPOLLHUP)) {
 				ioevents[i]->_errorOccurred = true;
 			}

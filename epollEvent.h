@@ -1,0 +1,58 @@
+#ifndef _TINYMQ_EPOLLEVENT_H_
+#define _TINYMQ_EPOLLEVENT_H_
+
+
+#define MAX_SOCKET_EVENTS 200
+#include <vector>
+namespace tinymq{
+
+	class epollEvent
+	{
+	public:
+		epollEvent();
+		~epollEvent();
+	   /*
+        * 增加Socket到事件中
+        *
+        * @param socket 被加的socket
+        * @param enableRead: 设置是否可读
+        * @param enableWrite: 设置是否可写
+        * @return  操作是否成功, true – 成功, false – 失败
+        */
+		bool addEvent(tinySocket *socket, bool enableRead, bool enableWrite);
+
+	    /*
+	     * 设置Socket到事件中
+		 *
+		 * @param socket 被加的socket
+		 * @param enableRead: 设置是否可读
+		 * @param enableWrite: 设置是否可写
+		 * @return  操作是否成功, true – 成功, false – 失败
+		 */
+		bool setEvent(tinySocket *socket, bool enableRead, bool enableWrite);
+
+	   /*
+	    * 删除Socket到事件中
+		*
+		* @param socket 被删除socket
+		* @return  操作是否成功, true – 成功, false – 失败
+		*/
+		bool removeEvent(tinySocket *socket);
+
+		/*
+		 * 得到读写事件。
+		 *
+		 * @param timeout  超时时间(单位:ms)
+		 * @param events  事件数组
+		 * @param cnt   events的数组大小
+		 * @return 事件数, 0为超时
+		 */
+		int getEvents(int timeout, std::vector<eventProcessor *>& events, int cnt);
+		
+	private:
+		int _iepfd; // epoll fd
+	};
+	
+}
+
+#endif
