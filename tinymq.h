@@ -44,6 +44,12 @@ namespace tinymq {
 #include "eventProcessor.h"
 #include "clientEventProcessor.h"
 #include "serverEventProcessor.h"
+#include "mqttProtocol.h"
+#define  TINY_SUCCESS   0
+#define  TINY_SOCKET_ERROR   1
+#define  TINY_EAGAIN   2
+#define  TINY_CONNECT_LOST   3
+#define  TINY_ERROR   4
 
 
 #endif

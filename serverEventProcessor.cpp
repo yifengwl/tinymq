@@ -8,7 +8,7 @@ namespace tinymq {
 	serverEventProcessor::~serverEventProcessor()
 	{
 	}
-	bool serverEventProcessor::handleReadEvent()
+	void serverEventProcessor::handleReadEvent()
 	{
 		socklen_t len = sizeof(sockaddr_in);
 		struct sockaddr_in *sa = (struct sockaddr_in*)malloc(len) ;
@@ -17,7 +17,7 @@ namespace tinymq {
 		if (clientfd == -1)
 		{
 			std::cout << "accept ERROR" << std::endl;
-			return false;
+			return ;
 		}
 
 		tinySocket *newClient = new tinySocket(clientfd, sa, this->_ownerSock->getEpollEvent());
@@ -25,12 +25,13 @@ namespace tinymq {
 		newClient->setProcessor(static_cast<eventProcessor *>(svp));
 		
 		
-		return newClient->getEpollEvent()->addEvent(newClient, true, false);
+		newClient->getEpollEvent()->addEvent(newClient, true, false);
+		return;
 		
 	}
-	bool serverEventProcessor::handleWriteEvent()
+	void serverEventProcessor::handleWriteEvent()
 	{
-		return true;
+		return ;
 	}
 
 }

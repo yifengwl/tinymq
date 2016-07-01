@@ -7,6 +7,7 @@ namespace tinymq {
 	{
 	public:
 		tinySocket(int sock, sockaddr_in* sockaddr, epollEvent * epoll);
+		~tinySocket();
 		int getSocketHandle();
 		eventProcessor *getProcessor();
 		void setProcessor(eventProcessor *);

@@ -4,32 +4,47 @@ namespace tinymq{
 
 	enum phase
 	{
-		START
-		
+		FIXHD_BEGIN,
+		FIXHD_REMAIN_LENGTH,
+		PAYLOAD
 	};
 	class clientEventProcessor : public eventProcessor
 	{
 	public:
 		clientEventProcessor(tinySocket *tSock);
 		~clientEventProcessor();
-		 bool handleReadEvent();
-		 bool handleWriteEvent();
+		 void handleReadEvent();
+		 void handleWriteEvent();
 		 int getSocketHandle();
-	private:
-		bool headerProcess();
-	//	void messageDispatcher();
-	//	void onConnect();	
 		
 	private:
-		message _payload;
+		void closeAndClearClient();
+		int fixedHeaderProcess();
+		int variableHeaderProcess();
 		
-		unsigned char _command;
+	private:
+		void messageDispatcher();	
+		void onConnect();
+		void onPublish();
+		void onPubAck();
+		void onPubRec();
+		void onPubRel();
+		void onPubComp();
+		void onSubscribe();
+		void onUnsubscarube();
+		void onPingRsp();
+		void onDisconnect();
+		
+	private:
+		void * _payload;
+		char _command;
 		int _readByteCount;			 //读取字节数，包括头部
 		int _payloadLen;				
-		int _remainLen;				 //剩余未读取payload长度
+		int _remaining_length;				 
+		int _remaining_mult;
 		int _remainLenSectionCount; //mqtt头部剩余长度指示位所占字节数，协议规定<=4
-		phase _phase;
+		phase _nextPhase;
 		
 	};
 }
-#endif
+#endif
