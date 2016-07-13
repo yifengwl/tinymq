@@ -3,28 +3,19 @@
 
 #include <string>
 #include <map>
-//#include "tinySocket.h"
 namespace tinymq {
 
-	class mqServer
+	class tinyServer
 	{
 	public:
-		void messageDispatcher();
-		
+		static tinyServer* instance();
+		void deleteSession(const std::string& clientid);
+		void addSession(const std::string& clientid, tinySession * session);
+		void reuseSession(const std::string& clientid, tinySocket* sock);
 	private:
-		void onConnect();
-		void onPublish();
-		void onPubAck();
-		void onPubRec();
-		void onPubRel();
-		void onPubComp();
-		void onSubscribe();
-		void onUnsubscarube();
-		void onPingReq();
-		void onDisconnect();
-		
-	private:
-		std::map<std::string, clientIOEvent*> _clientMap;
+		tinyServer() {};
+		std::map<std::string, tinySession*> _sessions;
+		static tinyServer* _instance;
 	};
 
 }

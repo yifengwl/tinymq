@@ -12,6 +12,7 @@ namespace tinymq {
 		eventProcessor *getProcessor();
 		void setProcessor(eventProcessor *);
 		epollEvent* getEpollEvent();
+		char*  getAddress();
 	private:
 		bool makeSocketNoBlocking();
 		
@@ -19,7 +20,7 @@ namespace tinymq {
 		eventProcessor *_processor;
 		epollEvent * _epollevent;
 		int _sockfd;
-		sockaddr_in * _address;
+		char * _address;
 	};
 }
 	

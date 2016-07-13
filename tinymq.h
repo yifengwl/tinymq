@@ -35,9 +35,11 @@ namespace tinymq {
 	class eventProcessor;
 	class clientEventProcessor;
 	class serverEventProcessor;
+	class tinySession;
+	struct tinyPacket;
 }
 
-#include "message.h"
+#include "session.h"
 #include "epollEvent.h"
 #include "server.h"
 #include "tinySocket.h"

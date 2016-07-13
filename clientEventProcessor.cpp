@@ -4,30 +4,45 @@ namespace tinymq {
 	clientEventProcessor::clientEventProcessor(tinySocket *tSock)
 	{
 		this->_ownerSock = tSock;
-		_nextPhase = FIXHD_BEGIN;
-		_payload = NULL;
-		_payloadLen = 0;				
-		_remaining_length = 0;	
-		_remaining_mult = 1;
-		_remainLenSectionCount = 0;
+		_packet = NULL;
+		_session = NULL;
+		//_nextPhase = FIXHD_BEGIN;
+		//_payload = NULL;
+		//_payloadLen = 0;				
+		//_remaining_length = 0;	
+		//_remaining_mult = 1;
+		//_remainLenSectionCount = 0;
 	}
 	clientEventProcessor::~clientEventProcessor()
 	{
-		free(_payload);
+		delete _packet;
 		delete _ownerSock;
 	}
-	void clientEventProcessor::closeAndClearClient()
+	void clientEventProcessor::setSession(tinySession* session)
 	{
+		_session = session;
+	}
+	void clientEventProcessor::closeAndClearSession()
+	{
+		if(_session != NULL)
+			delete _session;
 		delete this;	
+	}
+	void clientEventProcessor::closeSockKeepSession()
+	{
+		_session->setSock(NULL);
+		delete this;
 	}
 	void clientEventProcessor::handleReadEvent()
 	{
+		if (_packet == NULL) _packet = new tinyPacket();
+		
 		int rc = fixedHeaderProcess();
 		if (rc == TINY_EAGAIN)
 			return;
 		else if (rc == TINY_SOCKET_ERROR || rc == TINY_CONNECT_LOST)
 		{
-			closeAndClearClient();
+			closeAndClearSession();
 			return;
 		}	
 		
@@ -36,31 +51,31 @@ namespace tinymq {
 	void clientEventProcessor::handleWriteEvent()
 	{
 	}
-	void clientEventProcessor::messageDispatcher()
+	int clientEventProcessor::messageDispatcher()
 	{
-		switch ((_command) & 0xF0) {
+		switch ((_packet->_command) & 0xF0) {
 		case PINGREQ:
-			onConnect();
+			return onConnect();
 		case PINGRESP:
-			onPingRsp();
+			return onPingRsp();
 		case PUBACK:
-			onPubAck();
+			return onPubAck();
 		case PUBCOMP:
-			onPubComp();
+			return onPubComp();
 		case PUBLISH:
-			onPublish();
+			return onPublish();
 		case PUBREC:
-			onPubRec();
+			return onPubRec();
 		case PUBREL:
-			onPubRel();
+			return onPubRel();
 		case CONNECT:
-			onConnect();
+			return onConnect();
 		case DISCONNECT:
-			onDisconnect();
+			return onDisconnect();
 		case SUBSCRIBE:
-			onSubscribe();
+			return onSubscribe();
 		case UNSUBSCRIBE:
-			onUnsubscarube();
+			return onUnsubscarube();
 		case CONNACK:
 
 		case SUBACK:
@@ -70,54 +85,170 @@ namespace tinymq {
 
 		default:
 			
-			return ;
+			return 0;
 		}
 	}
-	void clientEventProcessor::onConnect()
+	int clientEventProcessor::onConnect()
 	{
+		char * protoclName = NULL;
+		char * clientId = NULL;
+		char  protocol_version;
+		char flag;
+		short  keepAlive;
+		int willQos;
+		bool clearSession, willFlag, willRetain, passwordFlag, userNameFlag;
+
+		int rc;
+		if (readString(&protoclName) != TINY_SUCCESS || protoclName == NULL)
+		{
+			return TINY_ERROR;
+		}
+		if (readByte(&protocol_version)!= TINY_SUCCESS)
+		{
+			return TINY_ERROR;
+		}
+
+		if (!strcmp(protoclName, PROTOCOL_NAME_v31)) {
+			if ((protocol_version & 0x7F) != PROTOCOL_VERSION_v31) {
+				std::cout << " Invalid protocol version" << (int)protocol_version << "in CONNECT from " << this->_ownerSock->getAddress() << std::endl;
+				rc = TINY_ERROR;
+			}
+			_packet->_protocol = mosq_p_mqtt31;
+		}
+		else if (!strcmp(protoclName, PROTOCOL_NAME_v311)) {
+			if ((protocol_version & 0x7F) != PROTOCOL_VERSION_v311) {
+				std::cout << " Invalid protocol version" << (int)protocol_version << "in CONNECT from " << this->_ownerSock->getAddress() << std::endl;
+				rc = TINY_ERROR;
+			}
+			if ((_packet->_command & 0x0F) != 0x00) {
+				rc = TINY_ERROR;
+		
+			}
+			_packet->_protocol = mosq_p_mqtt311;
+		}
+		else
+		{
+			std::cout << " Invalid protocol version" << (int)protocol_version << "in CONNECT from " << this->_ownerSock->getAddress() << std::endl;
+			rc = TINY_ERROR; 
+		}
+		
+		if (readByte(&flag) != TINY_SUCCESS )
+		{
+			return TINY_ERROR;
+		}
+		if (readShort(keepAlive) != TINY_SUCCESS)
+		{
+			return TINY_ERROR;
+		}
+		if (readString(&clientId) != TINY_SUCCESS || protoclName == NULL)
+		{
+			return TINY_ERROR;
+		}
+		std::string clientidStr(clientId);
+
+		_keepAlive = keepAlive;
+
+		if (flag & 0x01)
+		{
+
+			return TINY_ERROR;
+		}
+
+
+
+		if (flag & 0x02){
+			clearSession = true;
+			tinyServer::instance()->deleteSession(clientidStr);
+			_session = new tinySession(_ownerSock, clearSession);
+			tinyServer::instance()->addSession(clientidStr, _session);
+		}
+		else {
+			clearSession = false;
+
+		}
+		if(flag& 0x04){
+			willFlag = true;
+			willQos = (flag & 0x18) >> 3;
+			if (flag & 0x20) {
+				willRetain = true;
+			}
+			else {
+				willRetain = false;
+			}
+		}
+		else {
+			willFlag = false;
+			if ((flag & 0x18) || (flag & 0x20))
+				return TINY_ERROR;
+		}
+
+		if (flag & 0x40) {
+			passwordFlag = true;
+		}
+		else {
+			passwordFlag = false;
+		}
+		if (flag & 0x80) {
+			userNameFlag = true;
+		}
+		else {
+			userNameFlag = false;
+		}
+
+		
 	}
-	void clientEventProcessor::onPublish()
+	int clientEventProcessor::onPublish()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onPubAck()
+	int clientEventProcessor::onPubAck()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onPubRec()
+	int clientEventProcessor::onPubRec()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onPubRel()
+	int clientEventProcessor::onPubRel()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onPubComp()
+	int clientEventProcessor::onPubComp()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onSubscribe()
+	int clientEventProcessor::onSubscribe()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onUnsubscarube()
+	int clientEventProcessor::onUnsubscarube()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onPingRsp()
+	int clientEventProcessor::onPingRsp()
 	{
+		return TINY_ERROR;
 	}
-	void clientEventProcessor::onDisconnect()
+	int clientEventProcessor::onDisconnect()
 	{
+		return TINY_ERROR;
 	}
 	int clientEventProcessor::fixedHeaderProcess()
 	{
 		char Byte;
-		switch (_nextPhase)
+
+		switch (_packet->_nextPhase)
 		{
 		case FIXHD_BEGIN:
 			{				
 				int read_length =:: read(_ownerSock->getSocketHandle(), (void*)&Byte, 1);
 				if (read_length == 1)
 				{
-					_remainLenSectionCount = 0;
-					_remaining_length = 0;
-					_remaining_mult = 1;
-					_command = Byte;
-					_nextPhase = FIXHD_REMAIN_LENGTH;
+					_packet->_remainLenSectionCount = 0;
+					_packet->_remaining_length = 0;
+					_packet->_remaining_mult = 1;
+					_packet->_command = Byte;
+					_packet->_nextPhase = FIXHD_REMAIN_LENGTH;
 				}
 				else
 				{
@@ -139,13 +270,13 @@ namespace tinymq {
 				do {
 					int read_length =:: read(_ownerSock->getSocketHandle(), (void*)&Byte, 1);
 					if (read_length == 1) {
-						++_remainLenSectionCount;
+						++_packet->_remainLenSectionCount;
 
-						if (_remainLenSectionCount > 4) return TINY_SOCKET_ERROR;
+						if (_packet->_remainLenSectionCount > 4) return TINY_SOCKET_ERROR;
 
 
-						_remaining_length += (Byte & 127) * _remaining_mult;
-						_remaining_mult *= 128;
+						_packet->_remaining_length += (Byte & 127) * _packet->_remaining_mult;
+						_packet->_remaining_mult *= 128;
 					}
 					else {
 						if (read_length == 0) return TINY_CONNECT_LOST; 
@@ -161,32 +292,33 @@ namespace tinymq {
 					}
 				} while ((Byte & 128) != 0);
 				
-				_nextPhase = PAYLOAD;	
-				if (_payload == NULL)
+				_packet->_nextPhase = PAYLOAD;	
+				if (_packet->_payload == NULL)
 				{
-					_payload = malloc(_remaining_length);
+					_packet->_payload = malloc(_packet->_remaining_length);
 				}			
 				else
 				{
-					free(_payload);
-					_payload = malloc(_remaining_length);
+					free(_packet->_payload);
+					_packet->_payload = malloc(_packet->_remaining_length);
 				}
 			}
 		case PAYLOAD:
 			{
 				int read_length =:: read(_ownerSock->getSocketHandle(),
-					(void*)((char *)_payload + _readByteCount), _remaining_length);
-				if (read_length == _remaining_length)
+					(void*)((char *)_packet->_payload + _packet->_readByteCount),
+					_packet->_remaining_length);
+				if (read_length == _packet->_remaining_length)
 				{
-					_nextPhase = FIXHD_BEGIN;
+					_packet->_nextPhase = FIXHD_BEGIN;
 					return TINY_SUCCESS;
 				}
 				else
 				{
-					if (read_length > 0 && read_length < _remaining_length)
+					if (read_length > 0 && read_length < _packet->_remaining_length)
 					{
-						_readByteCount += read_length;
-						_remaining_length -= read_length;
+						_packet->_readByteCount += read_length;
+						_packet->_remaining_length -= read_length;
 						return TINY_EAGAIN;
 					}
 					else
@@ -208,5 +340,45 @@ namespace tinymq {
 			
 		}
 		
+	}
+	int clientEventProcessor::readShort(short& word)
+	{
+		char msb, lsb;
+		//_packet->_payloadPos = _packet->_payloadPos + 2;
+		//if (_packet->_payloadPos + 2 > _packet->_readByteCount) return TINY_SOCKET_ERROR;
+		msb = ((char*)_packet->_payload)[_packet->_payloadPos];
+		_packet->_payloadPos++;
+		lsb = *((char*)_packet->_payload + _packet->_payloadPos);
+		_packet->_payloadPos++;
+		
+		word = (msb << 8) + lsb;
+		
+		return TINY_SUCCESS;
+	}
+	int clientEventProcessor::readString(char **str)
+	{
+		short len;
+		if (readShort(len) != TINY_SUCCESS)
+			return TINY_SOCKET_ERROR;
+		
+		*str = (char*)malloc(len+1);
+		if (*str) {
+			memcpy(*str, &(((char*)_packet->_payload)[_packet->_payloadPos]), len);
+			(*str)[len] = '\0';
+			_packet->_payloadPos += len;
+			return TINY_SUCCESS;
+		}
+		else {
+			return TINY_SOCKET_ERROR;
+		}
+		
+	}
+
+	int clientEventProcessor::readByte(char *byte)
+	{
+
+		memcpy(byte, &(((char*)_packet->_payload)[_packet->_payloadPos]), 1);
+		_packet->_payloadPos += 1;
+		return TINY_SUCCESS;
 	}
 }

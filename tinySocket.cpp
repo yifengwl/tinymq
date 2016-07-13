@@ -5,7 +5,7 @@ namespace tinymq {
 	tinySocket::tinySocket(int sock, sockaddr_in* sockaddr, epollEvent * epoll)
 	{
 		this->_sockfd = sock; 
-		this->_address = sockaddr;
+		this->_address = inet_ntoa(sockaddr->sin_addr);
 		this->_epollevent = epoll;
 	}
 	tinySocket::~tinySocket()
@@ -34,6 +34,10 @@ namespace tinymq {
 		}
 		return true;
 		
+	}
+	char* tinySocket::getAddress()
+	{
+		return this->_address;
 	}
 	int tinySocket::getSocketHandle()
 	{
