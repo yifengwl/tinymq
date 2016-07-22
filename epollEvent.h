@@ -12,9 +12,9 @@ namespace tinymq{
 		epollEvent();
 		~epollEvent();
 	   /*
-        * 增加Socket到事件中
+        * 增加tinySocket到事件中
         *
-        * @param socket 被加的socket
+        * @param tinySocket 被加的socket
         * @param enableRead: 设置是否可读
         * @param enableWrite: 设置是否可写
         * @return  操作是否成功, true – 成功, false – 失败
@@ -22,7 +22,7 @@ namespace tinymq{
 		bool addEvent(tinySocket *socket, bool enableRead, bool enableWrite);
 
 	    /*
-	     * 设置Socket到事件中
+	     * 设置tinySocket到事件中
 		 *
 		 * @param socket 被加的socket
 		 * @param enableRead: 设置是否可读
@@ -32,7 +32,7 @@ namespace tinymq{
 		bool setEvent(tinySocket *socket, bool enableRead, bool enableWrite);
 
 	   /*
-	    * 删除Socket到事件中
+	    * 删除tinySocket到事件中
 		*
 		* @param socket 被删除socket
 		* @return  操作是否成功, true – 成功, false – 失败

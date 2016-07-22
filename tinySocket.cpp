@@ -5,7 +5,7 @@ namespace tinymq {
 	tinySocket::tinySocket(int sock, sockaddr_in* sockaddr, epollEvent * epoll)
 	{
 		this->_sockfd = sock; 
-		this->_address = inet_ntoa(sockaddr->sin_addr);
+		this->_address = strdup(inet_ntoa(sockaddr->sin_addr));
 		this->_epollevent = epoll;
 	}
 	tinySocket::~tinySocket()
@@ -14,6 +14,17 @@ namespace tinymq {
 		::close(_sockfd);
 		free(_address);
 	}
+
+	bool tinySocket::makeSocketEnableWrite()
+	{
+		return _epollevent->setEvent(this, true, true);
+	}
+
+	bool tinySocket::makeSocketDisableWrite()
+	{
+		return _epollevent->setEvent(this, true, false);
+	}
+
 	bool tinySocket::makeSocketNoBlocking()
 	{
 		int flags, s;

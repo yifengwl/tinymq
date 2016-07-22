@@ -29,13 +29,14 @@ int main()
 
 	for (;;)
 	{
+		events.clear();
 		epollevent->getEvents(-1, events, MAX_SOCKET_EVENTS);
 		for (auto vc : events)
 		{
+			if (vc->_writeOccurred)
+				vc->handleWriteEvent();
 			if (vc->_readOccurred)
-				vc->handleReadEvent();		
-			if (vc->_writeOccurred) 
-				vc->handleWriteEvent();			
+				vc->handleReadEvent();
 			if (vc->_errorOccurred)
 				std::cout << "ERROR OCCURRED" << std ::endl;
 			

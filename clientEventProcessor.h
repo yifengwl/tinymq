@@ -1,5 +1,6 @@
 #ifndef _CLIENTEVENTPROCESSER_H_
 #define _CLIENTEVENTPROCESSER_H_
+//#include<deque>
 namespace tinymq{
 	enum phase
 	{
@@ -15,7 +16,7 @@ namespace tinymq{
 	};
 	struct tinyPacket
 	{
-		void * _payload;
+		char * _payload;
 		int _payloadLen;
 		
 		char _command;
@@ -31,6 +32,7 @@ namespace tinymq{
 		{
 			_nextPhase = FIXHD_BEGIN;
 			_payload = NULL;
+			_readByteCount=0;
 			_payloadLen = 0;				
 			_remaining_length = 0;	
 			_remaining_mult = 1;
@@ -48,23 +50,26 @@ namespace tinymq{
 	public:
 		clientEventProcessor(tinySocket *tSock);
 		~clientEventProcessor();
-		 void handleReadEvent();
-		 void handleWriteEvent();
+		 bool handleReadEvent();
+		 bool handleWriteEvent();
 		 int getSocketHandle();
 		 void setSession(tinySession* session);
+		 tinySession*  getSession();
 		 int _keepAlive;
 
 		 void closeSockKeepSession();
 	private:
-		void closeAndClearSession();
-	
+
+		void closeAndClearSession();	
 		int fixedHeaderProcess();
 		int variableHeaderProcess();
 		
 		
 	private:
+		int tinyPacketWrite(tinyPacket *);
 		int messageDispatcher();	
 		int onConnect();
+		int onConnectAck(char, char);
 		int onPublish();
 		int onPubAck();
 		int onPubRec();
@@ -79,13 +84,15 @@ namespace tinymq{
 		inline int readShort(short& word);
 		inline int readString(char **str);
 		inline int readByte(char *byte);
+		inline int readBytes(char *byte, int len);
+		inline int tinyPacketAlloc(tinyPacket*);
 			
 		
 	private:
 		
 		struct tinyPacket * _packet;
 		tinySession* _session;
-		
+
 		//void * _payload;
 		//char _command;
 		//int _readByteCount;			 //payload¶ÁÈ¡×Ö½ÚÊý

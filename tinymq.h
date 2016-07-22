@@ -16,17 +16,17 @@
 #include <signal.h>
 #include <assert.h>
 #include <fcntl.h>  
-
+#include <stdlib.h>
 #include <iostream>
 #include <list>
 #include <queue>
 #include <vector>
 #include <string>
-#include <ext/hash_map>
+//#include <ext/hash_map>
 
 namespace tinymq {
 
-	class message;
+
 	class epollEvent;
 	class tinySocket;
 	class mqServer;
@@ -37,6 +37,7 @@ namespace tinymq {
 	class serverEventProcessor;
 	class tinySession;
 	struct tinyPacket;
+	struct willMessage;
 }
 
 #include "session.h"

@@ -2,8 +2,9 @@
 #define _TINYMQ_SESSION_H_
 
 #include<queue>
-#include<map>
+#include<set>
 #include<string>
+
 namespace tinymq {
 	struct message
 	{
@@ -12,6 +13,13 @@ namespace tinymq {
 		int qos;
 		tinyPacket *tp;
 	};
+	struct willMessage
+	{
+		std::string _willTopic;
+		char*  _willPayload;
+		int _willQos;
+		bool _willRetain;
+	};
 
 	class tinySession
 	{
@@ -19,15 +27,22 @@ namespace tinymq {
 		tinySession(tinySocket *sock, bool clearSession);
 		~tinySession();
 		void setSock(tinySocket *sock);
+		void setWillMsg(willMessage *);
+		void setClientId(std::string&);
 		void clearSock();
 		bool getClearSession();
-	private:		
+	public:
+		std::queue<tinyPacket *> _messgaeSendQueue;
+		std::set <std::string> topicSubscribed;
+		
+	private:				
 		std::string _clientId;
+		willMessage* _willmsg;
 		tinySocket *_sock;
 		bool _clearSession;
-		//std::queue<message *> _messgaeSendQueue;
-		//std::map<short, message*> waitingPubAckMap;
-		//std::map<short, message*> waitingPubCompMap;
+		
+		//std::map<short, tinyPacket*> waitingPubAckMap;
+		//std::map<short, tinyPacket*> waitingPubCompMap;
 	};
 
 }

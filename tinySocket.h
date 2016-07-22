@@ -13,6 +13,10 @@ namespace tinymq {
 		void setProcessor(eventProcessor *);
 		epollEvent* getEpollEvent();
 		char*  getAddress();
+
+		bool makeSocketEnableWrite();
+		bool makeSocketDisableWrite();
+
 	private:
 		bool makeSocketNoBlocking();
 		

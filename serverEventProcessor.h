@@ -7,8 +7,8 @@ namespace tinymq {
 	public:
 		serverEventProcessor(tinySocket* tSock);
 		~serverEventProcessor();
-		void handleReadEvent();
-		void handleWriteEvent();
+		bool handleReadEvent();
+		bool handleWriteEvent();
 		int getSocketHandle();
 	};
 }

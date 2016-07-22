@@ -6,8 +6,8 @@ namespace tinymq {
 	{
 	public:
 		virtual ~eventProcessor() {}
-		virtual void handleReadEvent() = 0;
-		virtual void handleWriteEvent() = 0;
+		virtual bool handleReadEvent() = 0;
+		virtual bool handleWriteEvent() = 0;
 		bool _errorOccurred;
 		bool _readOccurred;
 		bool _writeOccurred;

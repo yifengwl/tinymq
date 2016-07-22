@@ -67,7 +67,6 @@ namespace tinymq {
 
 		int res = epoll_wait(_iepfd, events, cnt, timeout);
 
-		ioevents.clear();
 	   //把events的事件转化成eventProcessor的事件
 		for (int i = 0; i < res; i++) {
 			ioevents.push_back(static_cast<eventProcessor*>(events[i].data.ptr));
