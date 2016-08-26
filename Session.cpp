@@ -6,6 +6,9 @@ namespace tinymq
 		_sock = sock;
 		_clearSession = clearSession;
 		_clientId = "";
+		ackMutex = PTHREAD_MUTEX_INITIALIZER;
+		recMutex = PTHREAD_MUTEX_INITIALIZER;
+		compMutex = PTHREAD_MUTEX_INITIALIZER;
 	}
 	tinySession::~tinySession()
 	{
@@ -13,10 +16,18 @@ namespace tinymq
 		delete _sock->getProcessor();
 		while(!_messgaeSendQueue.empty())
 		{
-			free(_messgaeSendQueue.back());
+			free(_messgaeSendQueue.front());
 			_messgaeSendQueue.pop();
 		}
-		delete _willmsg;
+		for (auto it : waitingPubAckMap)
+		{
+			delete(it.second);
+		}
+		for (auto it : waitingPubRecMap)
+		{
+			delete(it.second);
+		}
+		if( _willmsg!= NULL) delete _willmsg;
 			
 	}
 	void tinySession::setSock(tinySocket *sock)
@@ -40,5 +51,34 @@ namespace tinymq
 	bool tinySession::getClearSession()
 	{
 		return _clearSession;
+	}
+	clientEventProcessor* tinySession::getClientEP()
+	{
+		return dynamic_cast<clientEventProcessor*>(_sock->getProcessor());
+	}
+	void tinySession::ackMapLock() 
+	{
+		pthread_mutex_lock(&ackMutex);
+	}
+	void tinySession::ackMapUnlock()
+	{
+		pthread_mutex_unlock(&ackMutex);
+	}
+	void tinySession::recMapLock()
+	{
+		pthread_mutex_lock(&recMutex);
+	}
+	void tinySession::recMapUnlock()
+	{
+		pthread_mutex_unlock(&recMutex);
+	}
+
+	void tinySession::compMapLock()
+	{
+		pthread_mutex_lock(&compMutex);
+	}
+	void tinySession::compMapUnlock()
+	{
+		pthread_mutex_unlock(&compMutex);
 	}
 }
