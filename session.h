@@ -32,6 +32,7 @@ namespace tinymq {
 	{
 		std::string _willTopic;
 		char*  _willPayload;
+		long _willPayloadLen;
 		int _willQos;
 		bool _willRetain;
 	};
@@ -43,6 +44,7 @@ namespace tinymq {
 		~tinySession();
 		void setSock(tinySocket *sock);
 		void setWillMsg(willMessage *);
+		willMessage * getWillMsg();
 		void setClientId(std::string&);
 		void clearSock();
 		bool getClearSession();

@@ -17,8 +17,7 @@ namespace tinymq
 		auto iter = _sessions.find(clientid);
 		if (iter != _sessions.end())
 		{
-			delete iter->second;
-			_sessions.erase(iter);
+			delete iter->second;//自动删除，不需要再次erase
 		}
 	}
 	void tinyServer::eraseSession(const std::string& clientid)

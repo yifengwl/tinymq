@@ -13,6 +13,7 @@ namespace tinymq {
 	}
 	clientEventProcessor::~clientEventProcessor()
 	{
+		willMessagePublish();
 		if (_packet != NULL)delete _packet;
 		if (_ownerSock != NULL)delete _ownerSock;
 	}
@@ -330,6 +331,7 @@ namespace tinymq {
 			{
 				goto tiny_erro_occur;
 			}
+			willmsg->_willPayloadLen = willPayloadLen;
 			willPayload = (char*)malloc(willPayloadLen);
 			readBytes(willPayload, willPayloadLen);
 			willmsg->_willPayload = willPayload;
@@ -1030,5 +1032,69 @@ namespace tinymq {
 	void clientEventProcessor::updateVisitTime()
 	{
 		_lastVisitTime = time(NULL);
+	}
+	int clientEventProcessor::willMessagePublish()
+	{
+		if (_session->getWillMsg() == NULL)
+			return TINY_SUCCESS;
+		char qos = 0;
+		if (tinyServer::instance()->_topicSubscriber["#"] != NULL)
+			for (auto it : *(tinyServer::instance()->_topicSubscriber["#"]))
+			{
+				sendPublishPayload(_session->getWillMsg()->_willTopic, _session->getWillMsg()->_willPayload, _session->getWillMsg()->_willPayloadLen,0,qos,it.first);
+			}
+
+		size_t last = 0;
+		size_t index = _session->getWillMsg()->_willTopic.find_first_of("/", last);
+		std::string resultStr;
+		std::string tmp_str = _session->getWillMsg()->_willTopic.substr(last, index - last);
+		if (tmp_str.compare("") == 0)
+		{
+			last = index + 1;
+			index = _session->getWillMsg()->_willTopic.find_first_of("/", last);
+			resultStr.append("/").append(_session->getWillMsg()->_willTopic.substr(last, index - last));
+			//_addTopic(resultStr + "/#", cep);
+			if (tinyServer::instance()->_topicSubscriber[resultStr + "/#"] != NULL)
+				for (auto it : *(tinyServer::instance()->_topicSubscriber[resultStr + "/#"]))
+				{
+					sendPublishPayload(_session->getWillMsg()->_willTopic, _session->getWillMsg()->_willPayload, _session->getWillMsg()->_willPayloadLen, 0, qos, it.first);
+				}
+		}
+		else {
+			resultStr = tmp_str;
+			//_addTopic(resultStr + "/#", cep);
+			if (tinyServer::instance()->_topicSubscriber[resultStr + "/#"] != NULL)
+				for (auto it : *(tinyServer::instance()->_topicSubscriber[resultStr + "/#"]))
+				{
+					sendPublishPayload(_session->getWillMsg()->_willTopic, _session->getWillMsg()->_willPayload, _session->getWillMsg()->_willPayloadLen, 0, qos, it.first);
+				}
+		}
+
+		while (index != -1)
+		{
+			last = index + 1;
+			index = _session->getWillMsg()->_willTopic.find_first_of("/", last);
+			std::string tmp_str = _session->getWillMsg()->_willTopic.substr(last, index - last);
+			resultStr.append("/").append(tmp_str);
+			if (index == -1 && tmp_str.compare("") == 0)
+				break;
+			else
+			{
+				//_addTopic(resultStr + "/#", cep);
+				if (tinyServer::instance()->_topicSubscriber[resultStr + "/#"] != NULL)
+					for (auto it : *(tinyServer::instance()->_topicSubscriber[resultStr + "/#"]))
+					{
+						sendPublishPayload(_session->getWillMsg()->_willTopic, _session->getWillMsg()->_willPayload, _session->getWillMsg()->_willPayloadLen, 0, qos, it.first);
+					}
+			}
+
+		}
+
+		if (tinyServer::instance()->_topicSubscriber[_session->getWillMsg()->_willTopic] != NULL)
+			for (auto it : *(tinyServer::instance()->_topicSubscriber[_session->getWillMsg()->_willTopic]))
+			{
+				sendPublishPayload(_session->getWillMsg()->_willTopic, _session->getWillMsg()->_willPayload, _session->getWillMsg()->_willPayloadLen, 0, qos, it.first);
+			}
+		return TINY_SUCCESS;
 	}
 }

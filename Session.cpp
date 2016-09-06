@@ -42,7 +42,10 @@ namespace tinymq
 	void tinySession::setWillMsg(willMessage * wm){
 		_willmsg = wm;
 	}
-
+	willMessage* tinySession::getWillMsg()
+	{
+		return _willmsg;
+	}
 	void tinySession::clearSock()
 	{
 		delete _sock->getProcessor();

@@ -120,6 +120,7 @@ namespace tinymq {
 		int sendPubRel(short);
 		int sendUnsubscarubeAck(short);
 	private:
+		int willMessagePublish();
 		int publishToTopic(std::string&, char*, int, short);
 		int acceptPublish(tinyPacket *);
 	private:
