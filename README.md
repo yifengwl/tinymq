@@ -3,7 +3,7 @@ tinymq
 
 tinymq是一个基于linux平台C++编写的高性能异步mqtt协议代理服务
 
-开发测试平台ubuntu 14.04  gcc version 4.8.4
+开发测试平台ubuntu 14.04  g++ version 4.8.4
 
 ### MQTT
 
