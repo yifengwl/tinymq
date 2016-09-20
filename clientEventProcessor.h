@@ -14,6 +14,7 @@
 #ifndef _CLIENTEVENTPROCESSER_H_
 #define _CLIENTEVENTPROCESSER_H_
 #include<string.h>
+#include<memory>
 namespace tinymq {
 	enum phase
 	{
@@ -87,8 +88,8 @@ namespace tinymq {
 		void closeSockKeepSession();
 		bool isOvertime();
 		void updateVisitTime();
-		int resendPublish(tinyPacket *);
-		int resendPubRel(tinyPacket *);
+		int resendPublish(std::shared_ptr<tinymq::tinyPacket>);
+		int resendPubRel(std::shared_ptr<tinymq::tinyPacket>);
 
 	private:
 
@@ -98,7 +99,7 @@ namespace tinymq {
 
 
 	private:
-		int tinyPacketWrite(tinyPacket *);
+		int tinyPacketWrite(std::shared_ptr<tinymq::tinyPacket>);
 		int messageDispatcher();
 		int onConnect();
 		int onConnectAck(char, char);
@@ -122,13 +123,13 @@ namespace tinymq {
 	private:
 		int willMessagePublish();
 		int publishToTopic(std::string&, char*, int, short);
-		int acceptPublish(tinyPacket *);
+		int acceptPublish(std::shared_ptr<tinymq::tinyPacket>);
 	private:
 		inline int readShort(short& word);
 		inline int readString(char **str);
 		inline int readByte(char *byte);
 		inline int readBytes(char *byte, int len);
-		inline int tinyPacketAlloc(tinyPacket*);
+		inline int tinyPacketAlloc(std::shared_ptr<tinymq::tinyPacket>);
 		inline int sendPublishPayload(std::string& topic, char* payload, int payloadLen, short mid, char qos, tinySession*);
 
 	private:
