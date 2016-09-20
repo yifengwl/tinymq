@@ -67,7 +67,7 @@ namespace tinymq {
 
 		int res = epoll_wait(_iepfd, events, cnt, timeout);
 
-	   //°ÑeventsµÄÊÂ¼ş×ª»¯³ÉeventProcessorµÄÊÂ¼ş
+	  	//æŠŠeventsçš„äº‹ä»¶è½¬åŒ–æˆeventProcessorçš„äº‹ä»¶
 		for (int i = 0; i < res; i++) {
 			ioevents.push_back(static_cast<eventProcessor*>(events[i].data.ptr));
 			if (events[i].events & (EPOLLERR | EPOLLHUP)) {
