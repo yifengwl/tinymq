@@ -37,6 +37,7 @@
 #include <string>
 #include <pthread.h>
 #include <memory>
+
 //#include <ext/hash_map>
 
 namespace tinymq {

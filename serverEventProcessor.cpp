@@ -21,7 +21,10 @@ namespace tinymq {
 		}
 
 		tinySocket *newClient = new tinySocket(clientfd, sa, this->_ownerSock->getEpollEvent());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 585b74a247b407df0d328206d1f7534532a17d68
 		clientEventProcessor * svp = new clientEventProcessor(newClient);
 		newClient->setProcessor(static_cast<eventProcessor *>(svp));		
 		time_t timer = time(NULL);

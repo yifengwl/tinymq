@@ -1,5 +1,6 @@
 #include "tinymq.h"
 #include "signal.h"
+
 using namespace std;  
 using namespace tinymq;
 
@@ -36,8 +37,8 @@ void * timeCheckerLoop(void* t)
 				continue;
 			}
 
-
 			std::map<short, std::shared_ptr<tinymq::tinyPacket>>::iterator ackit;
+
 			sit->second->ackMapLock();
 			for (ackit = sit->second->waitingPubAckMap.begin(); ackit != sit->second->waitingPubAckMap.end(); ++ackit)
 			{
@@ -80,6 +81,7 @@ void * timeCheckerLoop(void* t)
 }
 
 int main()  
+
 {
 	signal(SIGPIPE, SIG_IGN);
 
@@ -104,7 +106,6 @@ int main()
 	sSvrAddr.sin_family = AF_INET;    
 	sSvrAddr.sin_addr.s_addr = inet_addr("192.168.1.162");      
 	sSvrAddr.sin_port = htons(8888);     
- 
 
 	// 创建tcpSocket（iSvrFd），监听本机8888端口    
 	iSvrFd = socket(AF_INET, SOCK_STREAM, 0);    
@@ -116,7 +117,6 @@ int main()
 	serverEventProcessor * svp = new serverEventProcessor(tSock);
 	tSock->setProcessor(static_cast<eventProcessor *>(svp));
 	epollevent->addEvent(tSock, true, false);
-
 
 	for (;;)
 	{

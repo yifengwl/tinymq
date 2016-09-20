@@ -26,6 +26,7 @@ namespace tinymq {
 		epollEvent* getEpollEvent();
 		sockaddr_in*  getAddress();
 
+
 		bool makeSocketEnableWrite();
 		bool makeSocketDisableWrite();
 
@@ -37,6 +38,7 @@ namespace tinymq {
 		epollEvent * _epollevent;
 		int _sockfd;
 		struct sockaddr_in * _address;
+
 	};
 }
 	

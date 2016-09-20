@@ -20,7 +20,6 @@
 #include<string>
 #include<memory>
 #include <string.h>
-
 namespace tinymq {
 	//struct message
 	//{
@@ -43,6 +42,7 @@ namespace tinymq {
 		~willMessage(){
 			if (_willPayload != NULL) free(_willPayload);
 		}
+
 	};
 
 	class tinySession
@@ -52,7 +52,9 @@ namespace tinymq {
 		~tinySession();
 		void setSock(tinySocket *sock);
 		void setWillMsg(willMessage *);
+
 		willMessage& getWillMsg();
+
 		void setClientId(std::string&);
 		void clearSock();
 		bool getClearSession();

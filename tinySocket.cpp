@@ -12,7 +12,6 @@ namespace tinymq {
 	{
 		_epollevent->removeEvent(this);	
 		::close(_sockfd);
-		//free(_address);
 	}
 
 	bool tinySocket::makeSocketEnableWrite()
@@ -46,7 +45,9 @@ namespace tinymq {
 		return true;
 		
 	}
+
 	sockaddr_in* tinySocket::getAddress()
+
 	{
 		return this->_address;
 	}

@@ -25,7 +25,8 @@ namespace tinymq {
 		bool _readOccurred;
 		bool _writeOccurred;
 	protected:
-		tinySocket * _ownerSock;		
+		tinySocket * _ownerSock;
 	};
 }
-#endif
+
+
