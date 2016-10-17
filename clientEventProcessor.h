@@ -125,12 +125,12 @@ namespace tinymq {
 		int publishToTopic(std::string&, char*, int, short);
 		int acceptPublish(std::shared_ptr<tinymq::tinyPacket>);
 	private:
-		inline int readShort(short& word);
-		inline int readString(char **str);
-		inline int readByte(char *byte);
-		inline int readBytes(char *byte, int len);
-		inline int tinyPacketAlloc(std::shared_ptr<tinymq::tinyPacket>);
-		inline int sendPublishPayload(std::string& topic, char* payload, int payloadLen, short mid, char qos, tinySession*);
+	 	int readShort(short& word);
+		int readString(char **str);
+		int readByte(char *byte);
+		int readBytes(char *byte, int len);
+		int tinyPacketAlloc(std::shared_ptr<tinymq::tinyPacket>);
+		int sendPublishPayload(std::string& topic, char* payload, int payloadLen, short mid, char qos, tinySession*);
 
 	private:
 		
