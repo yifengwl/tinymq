@@ -28,5 +28,5 @@ namespace tinymq {
 		tinySocket * _ownerSock;
 	};
 }
-
+#endif
 
