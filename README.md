@@ -29,6 +29,8 @@ According to the [MQTT spec](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3
 * 支持 QOS 0, 1 and 2 级别的消息订阅及发布
 * 支持遗嘱消息发布
 * 支持 # 通配符订阅
+* 订阅话题客户端通过hashmap存储，提高了多话题下消息分发速度
+* 基于epoll事件的I/O复用，降低了高并发情况下系统资源消耗同时大大提高并发数
 * 通过了mqttfx客户端 及libmosquitto-1.4.8编写的客户端验证
 
 **限制**
